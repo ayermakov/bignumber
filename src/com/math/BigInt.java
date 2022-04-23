@@ -1,5 +1,7 @@
 package com.math;
 
+import java.util.Arrays;
+
 public class BigInt {
     // bigInt stores decimal values in ASC order (value 123 is stored as {3,2,1}).
     private short[] value;
@@ -16,18 +18,50 @@ public class BigInt {
         indexOfNextPart = value.length - 1;
     }
 
+    private BigInt(short[] newValue) {
+        value = newValue;
+    }
+
     public BigInt add(BigInt addedValue) {
         short[] value2 = addedValue.getValue();
-        int j = 0;
-        if(value.length >= value2.length) {
-            for (int i = 0; i < value.length; i++) {
-                int sum = value[i] + value2[j++];
-            }
-        } else {
 
+        if(value.length >= value2.length)
+            return calculateAdd(value, value2);
+        else
+            return calculateAdd(value2, value);
+    }
+
+    private BigInt calculateAdd(short[] value1, short[] value2) {
+        int j = 0;
+        boolean pernose = false;
+        short[] result = new short[value1.length];
+        for (int i = 0; i < value1.length; i++) {
+            int sum = 0;
+
+            if(j >= value2.length)
+                sum = value1[i];
+            else
+                sum = value1[i] + value2[j++];
+
+            if(pernose)
+                sum++;
+
+            if(sum >= 10) {
+                sum %= 10;
+                pernose = true;
+            } else
+                pernose = false;
+
+            result[i] = (short) sum;
         }
 
-        return this;
+        if(pernose) {
+            result = Arrays.copyOf(result, result.length + 1);
+            result[result.length - 1] = 1;
+        }
+
+
+        return new BigInt(result);
     }
 
     public BigInt distract(BigInt addedValue) {
