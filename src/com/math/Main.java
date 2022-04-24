@@ -1,14 +1,15 @@
 package com.math;
+import static org.assertj.core.api.Assertions.*;
 
 public class Main {
     public static void main(String[] args) {
-	    BigInt decimal = new BigInt("5348");
-        System.out.println(decimal);
+        assertThat(new BigInt("5348").add(new BigInt("99")).toString())
+                .isEqualTo(new BigInt("5447").toString());
 
-        System.out.println(new BigInt("5348").add(new BigInt("99")));
+        assertThat(new BigInt("1223").add(new BigInt("2138778347287428")).toString())
+                .isEqualTo(new BigInt("2138778347288651").toString());
 
-        System.out.println(new BigInt("2138778347287428").add(new BigInt("1223")));
-
-        System.out.println(new BigInt("9999").add(new BigInt("9999")));
+        assertThat(new BigInt("9999").add(new BigInt("9999")).toString())
+                .isEqualTo(new BigInt("19998").toString());
     }
 }

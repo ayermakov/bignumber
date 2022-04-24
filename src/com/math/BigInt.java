@@ -31,6 +31,14 @@ public class BigInt {
             return calculateAdd(value2, value);
     }
 
+    /**
+     * This method add two big numbers.
+     * First argument must be a larger array than the second one.
+     *
+     * @param value1
+     * @param value2
+     * @return
+     */
     private BigInt calculateAdd(short[] value1, short[] value2) {
         int j = 0;
         boolean pernose = false;
