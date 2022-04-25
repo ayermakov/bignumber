@@ -119,4 +119,28 @@ public class BigInt {
 
         return result.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        BigInt bigInt = (BigInt) o;
+        var values = bigInt.getValue();
+
+        if(value.length != bigInt.getValue().length)
+            return false;
+
+        for(int i = 0; i < value.length; i++) {
+            if(value[i] != values[i])
+                return false;
+        }
+
+        return true;
+    }
 }
