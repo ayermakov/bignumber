@@ -8,14 +8,16 @@ public class BigInt {
     private StringBuffer lastResult = new StringBuffer();
     private int indexOfNextPart;
     private int indexOfHasNextDigit = 0;
+    private boolean isNegative;
 
-    public BigInt(String bigIntInString) {
+    public BigInt(String bigIntInString, boolean negative) {
         value = new short[bigIntInString.length()];
         for(int i = value.length - 1, j = 0; i >= 0 && j < bigIntInString.length(); i--, j++) {
             value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
         }
 
         indexOfNextPart = value.length - 1;
+        isNegative = negative;
     }
 
     private BigInt(short[] newValue) {
@@ -25,10 +27,25 @@ public class BigInt {
     public BigInt add(BigInt addedValue) {
         short[] value2 = addedValue.getValue();
 
-        if(value.length >= value2.length)
-            return calculateAdd(value, value2);
-        else
-            return calculateAdd(value2, value);
+        if(isNegative) {
+            if (addedValue.isNegative()) {
+                if (value.length >= value2.length)
+                    return calculateAdd(value, value2); //with neg flag
+                else
+                    return calculateAdd(value2, value); //with neg flag
+            } else {
+                if (value.length >= value2.length)
+                    return calculateDistract(value, value2);
+                else
+                    return calculateDistract(value2, value);//with plus flag
+            }
+        } else {
+            if (addedValue.isNegative()) {
+                return this;
+            } else {
+                return calculateAdd(value, value2);//no flag
+            }
+        }
     }
 
     /**
@@ -68,11 +85,14 @@ public class BigInt {
             result[result.length - 1] = 1;
         }
 
-
         return new BigInt(result);
     }
 
     public BigInt distract(BigInt addedValue) {
+        return this;
+    }
+
+    private BigInt calculateDistract(short[] value1, short[] value2) {
         return this;
     }
 
@@ -91,14 +111,6 @@ public class BigInt {
         return this;
     }
 
-    /**public int getNextPart() {
-
-    }**/
-
-    public String getLastResult() {
-        return lastResult.toString();
-    }
-
     public short[] getValue() {
         return value;
     }
@@ -108,6 +120,16 @@ public class BigInt {
             return true;
         else
             return false;
+    }
+
+    public boolean isNegative() {
+        return isNegative;
+    }
+
+    public boolean isGreaterThan(BigInt anotherNumber) {
+        var anotherValue = anotherNumber.getValue();
+
+        return false;
     }
 
     @Override
@@ -131,9 +153,13 @@ public class BigInt {
         }
 
         BigInt bigInt = (BigInt) o;
+
+        if(isNegative != bigInt.isNegative)
+            return false;
+
         var values = bigInt.getValue();
 
-        if(value.length != bigInt.getValue().length)
+        if(value.length != values.length)
             return false;
 
         for(int i = 0; i < value.length; i++) {
