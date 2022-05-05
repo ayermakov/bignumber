@@ -21,5 +21,11 @@ public class Main {
 
         assertThat(new BigNumber("+9999").add(new BigNumber("9999")))
                 .isEqualTo(new BigNumber("19998"));
+
+        assertThat(new BigNumber("9999").subtract(new BigNumber("9999")))
+                .isEqualTo(new BigNumber("0"));
+
+        assertThat(new BigNumber("9998").subtract(new BigNumber("9999")))
+                .isEqualTo(new BigNumber("-1"));
     }
 }

@@ -14,6 +14,12 @@ public class BigNumber {
 
     private BigNumber(short[] newValue) {
         value = newValue;
+        isNegative = false;
+    }
+
+    private BigNumber(short[] newValue, boolean signNegative) {
+        value = newValue;
+        isNegative = signNegative;
     }
 
     private String checkAndReturnTheString(String toCheck) {
@@ -40,7 +46,7 @@ public class BigNumber {
             value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
         }
 
-        if(value[value.length - 1] == 0)
+        if(value[value.length - 1] == 0 && value.length > 1)
             value = Arrays.copyOfRange(value, 0, value.length - 1);
     }
 
@@ -50,26 +56,26 @@ public class BigNumber {
         if(isNegative) {
             if (addedValue.isNegative()) {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateAdd(value, value2); //with neg flag
+                    return calculateAdd(value, value2, true); //with neg flag
                 else
-                    return calculateAdd(value2, value); //with neg flag
+                    return calculateAdd(value2, value, true); //with neg flag
             } else {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateSubtract(value, value2);//with neg flag
+                    return calculateSubtract(value, value2, true);//with neg flag
                 else
-                    return calculateSubtract(value2, value);//with plus flag
+                    return calculateSubtract(value2, value, false);//with plus flag
             }
         } else {
             if (addedValue.isNegative()) {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateSubtract(value, value2); //with plus flag
+                    return calculateSubtract(value, value2, false); //with plus flag
                 else
-                    return calculateSubtract(value2, value); //with neg flag
+                    return calculateSubtract(value2, value, true); //with neg flag
             } else {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateAdd(value, value2);//with plus flag
+                    return calculateAdd(value, value2, false);//with plus flag
                 else
-                    return calculateAdd(value2, value);//with plus flag
+                    return calculateAdd(value2, value, false);//with plus flag
             }
         }
     }
@@ -80,9 +86,10 @@ public class BigNumber {
      *
      * @param value1 is the biggest one
      * @param value2 is the less one
+     * @param signNegative is negative or not
      * @return new BigNumber
      */
-    private BigNumber calculateAdd(short[] value1, short[] value2) {
+    private BigNumber calculateAdd(short[] value1, short[] value2, boolean signNegative) {
         int j = 0;
         boolean pernose = false;
         short[] result = new short[value1.length];
@@ -111,7 +118,7 @@ public class BigNumber {
             result[result.length - 1] = 1;
         }
 
-        return new BigNumber(result);
+        return new BigNumber(result, signNegative);
     }
 
     public BigNumber subtract(BigNumber subtractedValue) {
@@ -120,32 +127,74 @@ public class BigNumber {
         if(isNegative) {
             if(subtractedValue.isNegative()) {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateSubtract(value, value2); //with neg flag
+                    return calculateSubtract(value, value2, true); //with neg flag
                 else
-                    return calculateSubtract(value2, value); //with plus flag
+                    return calculateSubtract(value2, value, false); //with plus flag
             } else {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateAdd(value, value2);//with neg flag
+                    return calculateAdd(value, value2, true);//with neg flag
                 else
-                    return calculateAdd(value2, value);//with neg flag
+                    return calculateAdd(value2, value, true);//with neg flag
             }
         } else {
             if(subtractedValue.isNegative()) {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateAdd(value, value2); //with plus flag
+                    return calculateAdd(value, value2, false); //with plus flag
                 else
-                    return calculateAdd(value2, value); //with plus flag
+                    return calculateAdd(value2, value, false); //with plus flag
             } else {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateSubtract(value, value2);//with plus flag
+                    return calculateSubtract(value, value2, false);//with plus flag
                 else
-                    return calculateSubtract(value2, value);//with neg flag
+                    return calculateSubtract(value2, value, true);//with neg flag
             }
         }
     }
 
-    private BigNumber calculateSubtract(short[] value1, short[] value2) {
-        return this;
+    /**
+     * This method subtracts two big numbers.
+     * First argument must be a larger array (number) than the second one.
+     *
+     * @param value1 is the biggest one
+     * @param value2 is the less one
+     * @param signNegative is negative or not
+     * @return new BigNumber
+     */
+    private BigNumber calculateSubtract(short[] value1, short[] value2, boolean signNegative) {
+        short[] result = new short[value1.length];
+        boolean pernose = false;
+        for(int i = 0, j = 0; i < value1.length; i++, j++) {
+            short primaryNumber = value1[i];
+            short secondNumber = j < value2.length ? value2[j] : 0;
+
+            if(pernose) {
+                primaryNumber--;
+                pernose = false;
+            }
+
+            if(primaryNumber < secondNumber) {
+                primaryNumber += 10;
+                pernose = true;
+            }
+
+            result[i] = (short) (primaryNumber - secondNumber);
+        }
+
+        int indexOfZeros = result.length - 1;
+        for(int i = result.length - 1; i >= 0; i--) {
+            if(result[i] == 0 && i != 0)
+                indexOfZeros--;
+            else
+                break;
+        }
+
+        if(indexOfZeros < result.length - 1)
+            result = Arrays.copyOf(result, indexOfZeros + 1);
+
+        if(result[0] == 0)
+            signNegative = false;
+
+        return new BigNumber(result, signNegative);
     }
 
     public BigNumber multiply(BigNumber addedValue) {
@@ -165,10 +214,10 @@ public class BigNumber {
     }
 
     public boolean isGreaterThan(BigNumber anotherNumber) {
-        if(isNegative)
-            if(!anotherNumber.isNegative())
+        if(isNegative) {
+            if (!anotherNumber.isNegative())
                 return false;
-        else if(anotherNumber.isNegative())
+        } else if(anotherNumber.isNegative())
             return true;
 
         return isGreaterThanWithoutSign(anotherNumber);
@@ -197,6 +246,9 @@ public class BigNumber {
 
     @Override
     public String toString() {
+        if(value[0] == 0)
+            isNegative = false;
+
         StringBuilder result = new StringBuilder(isNegative ? "-" : "");
         for(int i = value.length - 1; i >= 0; i--) {
             result.append(value[i]);
