@@ -158,5 +158,15 @@ public class Main {
 
         assertThat(new BigNumber("9").subtract(new BigNumber("81")))
                 .isEqualTo(new BigNumber("-72"));
+
+        //power of ten
+        assertThat(new BigNumber("1").multiplyByPowerOfTen(1))
+                .isEqualTo(new BigNumber("10"));
+
+        assertThat(new BigNumber("-2").multiplyByPowerOfTen(2))
+                .isEqualTo(new BigNumber("-200"));
+
+        assertThat(new BigNumber("+123").multiplyByPowerOfTen(4))
+                .isEqualTo(new BigNumber("1230000"));
     }
 }

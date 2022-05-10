@@ -22,33 +22,7 @@ public class BigNumber {
         isNegative = signNegative;
     }
 
-    private String checkAndReturnTheString(String toCheck) {
-        if(toCheck == null || toCheck.length() == 0)
-            return "0";
-        else
-            return toCheck;
-    }
 
-    private void init(String bigIntInString) {
-        if(bigIntInString.charAt(0) == '-')
-            isNegative = true;
-        else if(bigIntInString.charAt(0) == '+')
-            isNegative = false;
-        else
-            isNegative = false;
-
-        value = new short[bigIntInString.length()];
-        for(int i = value.length - 1, j = 0; i >= 0 && j < bigIntInString.length(); i--, j++) {
-            if(j == 0 && (bigIntInString.charAt(j) == '-' || bigIntInString.charAt(j) == '+')) {
-                value[i] = 0;
-                continue;
-            }
-            value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
-        }
-
-        if(value[value.length - 1] == 0 && value.length > 1)
-            value = Arrays.copyOfRange(value, 0, value.length - 1);
-    }
 
     public BigNumber add(BigNumber addedValue) {
         short[] value2 = addedValue.getValue();
@@ -197,7 +171,19 @@ public class BigNumber {
         return new BigNumber(result, signNegative);
     }
 
+    /**
+     * Implements a school method of multiplication.
+     *
+     * @param addedValue
+     * @return
+     */
     public BigNumber multiply(BigNumber addedValue) {
+        BigNumber sum = new BigNumber("0");
+        return sum;
+    }
+
+    public BigNumber multiplyByPowerOfTen(int power) {
+        append(power, (short) 0);
         return this;
     }
 
@@ -221,27 +207,6 @@ public class BigNumber {
             return true;
 
         return isGreaterThanWithoutSign(anotherNumber);
-    }
-
-    private boolean isGreaterThanWithoutSign(BigNumber anotherNumber) {
-        var anotherValue = anotherNumber.getValue();
-        return isGreaterThan(anotherValue);
-    }
-
-    private boolean isGreaterThan(short[] anotherValue) {
-        if(value.length > anotherValue.length)
-            return true;
-        else if(anotherValue.length > value.length)
-            return false;
-
-        for(int i = value.length - 1; i >= 0; i--) {
-            if(value[i] > anotherValue[i])
-                return true;
-            else if(anotherValue[i] > value[i])
-                return false;
-        }
-
-        return false;
     }
 
     @Override
@@ -288,5 +253,67 @@ public class BigNumber {
         for(int i = 0; i < value.length; ++i)
             sum += (int) value[i];
         return sum;
+    }
+
+    private String checkAndReturnTheString(String toCheck) {
+        if(toCheck == null || toCheck.length() == 0)
+            return "0";
+        else
+            return toCheck;
+    }
+
+    private void init(String bigIntInString) {
+        if(bigIntInString.charAt(0) == '-')
+            isNegative = true;
+        else if(bigIntInString.charAt(0) == '+')
+            isNegative = false;
+        else
+            isNegative = false;
+
+        value = new short[bigIntInString.length()];
+        for(int i = value.length - 1, j = 0; i >= 0 && j < bigIntInString.length(); i--, j++) {
+            if(j == 0 && (bigIntInString.charAt(j) == '-' || bigIntInString.charAt(j) == '+')) {
+                value[i] = 0;
+                continue;
+            }
+            value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
+        }
+
+        if(value[value.length - 1] == 0 && value.length > 1)
+            value = Arrays.copyOfRange(value, 0, value.length - 1);
+    }
+
+    private boolean isGreaterThanWithoutSign(BigNumber anotherNumber) {
+        var anotherValue = anotherNumber.getValue();
+        return isGreaterThan(anotherValue);
+    }
+
+    private boolean isGreaterThan(short[] anotherValue) {
+        if(value.length > anotherValue.length)
+            return true;
+        else if(anotherValue.length > value.length)
+            return false;
+
+        for(int i = value.length - 1; i >= 0; i--) {
+            if(value[i] > anotherValue[i])
+                return true;
+            else if(anotherValue[i] > value[i])
+                return false;
+        }
+
+        return false;
+    }
+
+    private void append(int times, short toAppend) {
+        final int newLength = value.length + times;
+        short[] result = new short[newLength];
+
+        for(int i = 0; i < times; i++)
+            result[i] = toAppend;
+
+        for(int i = 0; i < value.length; i++)
+            result[i + times] = value[i];
+
+        value = result;
     }
 }
