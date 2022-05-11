@@ -22,8 +22,6 @@ public class BigNumber {
         isNegative = signNegative;
     }
 
-
-
     public BigNumber add(BigNumber addedValue) {
         short[] value2 = addedValue.getValue();
 
@@ -92,7 +90,9 @@ public class BigNumber {
             result[result.length - 1] = 1;
         }
 
-        return new BigNumber(result, signNegative);
+        value = result;
+        isNegative = signNegative;
+        return this;
     }
 
     public BigNumber subtract(BigNumber subtractedValue) {
@@ -179,7 +179,37 @@ public class BigNumber {
      */
     public BigNumber multiply(BigNumber addedValue) {
         BigNumber sum = new BigNumber("0");
+        short[] value2 = addedValue.getValue();
+
+        for(int i = 0; i < value2.length; i++) {
+            for(int j = 0; j < value.length; j++) {
+                int one = value[j] * value2[i];
+                String two = String.valueOf(one);
+                String three = append(two, new BigNumber(String.valueOf(j)).add(new BigNumber(String.valueOf(i))), (short) 0);
+                sum = sum.add(new BigNumber(three));
+            }
+        }
+
+        boolean flag;
+        if(isNegative()) {
+            if(addedValue.isNegative())
+                flag = false;
+            else
+                flag = true;
+        } else {
+            if(addedValue.isNegative())
+                flag = true;
+            else
+                flag = false;
+        }
+
+        sum.setNegative(flag);
+
         return sum;
+    }
+
+    public BigNumber increment() {
+        return add(new BigNumber("1"));
     }
 
     public BigNumber multiplyByPowerOfTen(int power) {
@@ -199,6 +229,10 @@ public class BigNumber {
         return isNegative;
     }
 
+    public void setNegative(boolean isNegative) {
+        this.isNegative = isNegative;
+    }
+
     public boolean isGreaterThan(BigNumber anotherNumber) {
         if(isNegative) {
             if (!anotherNumber.isNegative())
@@ -207,6 +241,16 @@ public class BigNumber {
             return true;
 
         return isGreaterThanWithoutSign(anotherNumber);
+    }
+
+    public boolean isLessThan(BigNumber anotherNumber) {
+        if(isNegative) {
+            if (!anotherNumber.isNegative())
+                return true;
+        } else if(anotherNumber.isNegative())
+            return false;
+
+        return isLessThan(anotherNumber.getValue());
     }
 
     @Override
@@ -235,7 +279,7 @@ public class BigNumber {
         if(isNegative != bigInt.isNegative())
             return false;
 
-        var values = bigInt.getValue();
+        short[] values = bigInt.getValue();
 
         if(value.length != values.length)
             return false;
@@ -304,6 +348,27 @@ public class BigNumber {
         return false;
     }
 
+    private boolean isLessThan(int i) {
+        BigNumber than = new BigNumber(String.valueOf(i));
+        return isLessThan(than.getValue());
+    }
+
+    private boolean isLessThan(short[] anotherValue) {
+        if(value.length > anotherValue.length)
+            return false;
+        else if(anotherValue.length > value.length)
+            return true;
+
+        for(int i = value.length - 1; i >= 0; i--) {
+            if(value[i] > anotherValue[i])
+                return false;
+            else if(anotherValue[i] > value[i])
+                return true;
+        }
+
+        return false;
+    }
+
     private void append(int times, short toAppend) {
         final int newLength = value.length + times;
         short[] result = new short[newLength];
@@ -315,5 +380,21 @@ public class BigNumber {
             result[i + times] = value[i];
 
         value = result;
+    }
+
+    private String append(String value, int times, short toAppend) {
+        StringBuilder builder = new StringBuilder(value);
+        for(int i = 0; i < times; i++) {
+            builder.append(toAppend);
+        }
+        return builder.toString();
+    }
+
+    private String append(String value, BigNumber times, short toAppend) {
+        StringBuilder builder = new StringBuilder(value);
+        for(BigNumber i = new BigNumber("0"); i.isLessThan(times); i.increment()) {
+            builder.append(toAppend);
+        }
+        return builder.toString();
     }
 }

@@ -168,5 +168,35 @@ public class Main {
 
         assertThat(new BigNumber("+123").multiplyByPowerOfTen(4))
                 .isEqualTo(new BigNumber("1230000"));
+
+        //multiply
+        assertThat(new BigNumber("-23").multiply(new BigNumber("9")))
+                .isEqualTo(new BigNumber("-207"));
+
+        assertThat(new BigNumber("99").multiply(new BigNumber("99")))
+                .isEqualTo(new BigNumber("9801"));
+
+        assertThat(new BigNumber("99").multiply(new BigNumber("-999")))
+                .isEqualTo(new BigNumber("-98901"));
+
+        //increment
+        assertThat(new BigNumber("0").increment())
+                .isEqualTo(new BigNumber("1"));
+
+        assertThat(new BigNumber("-1").increment())
+                .isEqualTo(new BigNumber("0"));
+
+        assertThat(new BigNumber("-20").increment())
+                .isEqualTo(new BigNumber("-19"));
+
+        assertThat(new BigNumber("9").increment())
+                .isEqualTo(new BigNumber("10"));
+
+        assertThat(new BigNumber("28").increment())
+                .isEqualTo(new BigNumber("29"));
+
+        assertThat(new BigNumber("99").increment())
+                .isEqualTo(new BigNumber("100"));
     }
 }
+
