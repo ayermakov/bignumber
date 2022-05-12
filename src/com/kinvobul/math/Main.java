@@ -197,6 +197,19 @@ public class Main {
 
         assertThat(new BigNumber("99").increment())
                 .isEqualTo(new BigNumber("100"));
+
+        //floating numbers
+        assertThat(new BigNumber("123.123"))
+                .isEqualTo(new BigNumber("123.123"));
+
+        assertThat(new BigNumber(".12"))
+                .isEqualTo(new BigNumber("0.12"));
+
+        assertThat(new BigNumber("-.12"))
+                .isNotEqualTo(new BigNumber("0.12"));
+
+        assertThat(new BigNumber("-.12").toString())
+                .isEqualTo(new BigNumber("-0.12").toString());
     }
 }
 

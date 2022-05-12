@@ -1,11 +1,14 @@
 package com.kinvobul.math;
 
 import java.util.Arrays;
+import java.util.IllegalFormatWidthException;
 
 public class BigNumber {
     // BigNumber stores decimal values in reverse order (value 123 is stored as {3,2,1}).
     private short[] value;
     private boolean isNegative;
+    private short[] floatingPart;
+    private boolean hasFloatingPart;
 
     public BigNumber(String bigIntInString) {
         bigIntInString = checkAndReturnTheString(bigIntInString);
@@ -13,13 +16,29 @@ public class BigNumber {
     }
 
     private BigNumber(short[] newValue) {
-        value = newValue;
-        isNegative = false;
+        this.value = newValue;
+        this.isNegative = false;
+        this.hasFloatingPart = false;
+    }
+
+    private BigNumber(short[] newValue, short[] newFloatingPart) {
+        this.value = newValue;
+        this.isNegative = false;
+        this.floatingPart = newFloatingPart;
+        this.hasFloatingPart = true;
     }
 
     private BigNumber(short[] newValue, boolean signNegative) {
-        value = newValue;
-        isNegative = signNegative;
+        this.value = newValue;
+        this.isNegative = signNegative;
+        this.hasFloatingPart = false;
+    }
+
+    private BigNumber(short[] newValue, short[] newFloatingPart, boolean signNegative) {
+        this.value = newValue;
+        this.isNegative = signNegative;
+        this.floatingPart = newFloatingPart;
+        this.hasFloatingPart = true;
     }
 
     public BigNumber add(BigNumber addedValue) {
@@ -225,8 +244,16 @@ public class BigNumber {
         return value;
     }
 
+    public short[] getFloatingPart() {
+        return floatingPart;
+    }
+
     public boolean isNegative() {
         return isNegative;
+    }
+
+    public boolean hasFloatingPart() {
+        return hasFloatingPart;
     }
 
     public void setNegative(boolean isNegative) {
@@ -255,12 +282,17 @@ public class BigNumber {
 
     @Override
     public String toString() {
-        if(value[0] == 0)
+        if(value[0] == 0 && !hasFloatingPart())
             isNegative = false;
 
         StringBuilder result = new StringBuilder(isNegative ? "-" : "");
-        for(int i = value.length - 1; i >= 0; i--) {
+        for(int i = value.length - 1; i >= 0; i--)
             result.append(value[i]);
+
+        if(hasFloatingPart) {
+            result.append('.');
+            for(int i = floatingPart.length - 1; i >= 0; i--)
+                result.append(floatingPart[i]);
         }
 
         return result.toString();
@@ -279,8 +311,14 @@ public class BigNumber {
         if(isNegative != bigInt.isNegative())
             return false;
 
-        short[] values = bigInt.getValue();
+        if(hasFloatingPart())
+            if(!bigInt.hasFloatingPart())
+                return false;
+        else
+            if(bigInt.hasFloatingPart())
+                return false;
 
+        short[] values = bigInt.getValue();
         if(value.length != values.length)
             return false;
 
@@ -288,14 +326,29 @@ public class BigNumber {
             if(value[i] != values[i])
                 return false;
 
+        if(hasFloatingPart() && bigInt.hasFloatingPart()) {
+            short[] floating = bigInt.getFloatingPart();
+            if (floatingPart.length != floating.length)
+                return false;
+
+            for (int i = 0; i < floatingPart.length; i++)
+                if (floatingPart[i] != floating[i])
+                    return false;
+        }
+
         return true;
     }
 
     @Override
     public int hashCode() {
         int sum = 0;
-        for(int i = 0; i < value.length; ++i)
-            sum += (int) value[i];
+        for (short element : value)
+            sum += (int) element;
+
+        if(hasFloatingPart)
+            for (short item : floatingPart)
+                sum += (int) item;
+
         return sum;
     }
 
@@ -307,24 +360,79 @@ public class BigNumber {
     }
 
     private void init(String bigIntInString) {
-        if(bigIntInString.charAt(0) == '-')
+        if(bigIntInString.charAt(0) == '-') {
             isNegative = true;
-        else if(bigIntInString.charAt(0) == '+')
+            bigIntInString = String.copyValueOf(bigIntInString.toCharArray(), 1, bigIntInString.length() - 1);
+        } else if(bigIntInString.charAt(0) == '+') {
             isNegative = false;
-        else
+            bigIntInString = String.copyValueOf(bigIntInString.toCharArray(), 1, bigIntInString.length() - 1);
+        } else
             isNegative = false;
 
-        value = new short[bigIntInString.length()];
+        boolean dotFound = false;
+        int dotIndex = 0;
+        for(int i = 0; i < bigIntInString.length(); i++) {
+            switch(bigIntInString.charAt(i)) {
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    break;
+                case '+':
+                    if(i != 0)
+                        throw new IllegalArgumentException("Plus sign found in wrong place with index " + i + ".");
+                    break;
+                case '-':
+                    if(i != 0)
+                        throw new IllegalArgumentException("Minus sign found in wrong place with index " + i + ".");
+                    break;
+                case '.':
+                    if(dotFound)
+                        throw new IllegalArgumentException("Found more than a one dot.");
+                    dotFound = true;
+                    dotIndex = i;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Found wrong symbol " + bigIntInString.charAt(i) + ".");
+            }
+        }
+
+        if(dotFound) {
+            if (dotIndex == 0)
+                value = new short[1];
+            else
+                value = new short[dotIndex];
+        } else
+            value = new short[bigIntInString.length()];
+
         for(int i = value.length - 1, j = 0; i >= 0 && j < bigIntInString.length(); i--, j++) {
-            if(j == 0 && (bigIntInString.charAt(j) == '-' || bigIntInString.charAt(j) == '+')) {
+            if(j == 0 && bigIntInString.charAt(j) == '.') {
                 value[i] = 0;
                 continue;
             }
+
+            if(bigIntInString.charAt(j) == '.')
+                throw new IllegalArgumentException("This iteration should not happen.");
+
             value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
         }
 
-        if(value[value.length - 1] == 0 && value.length > 1)
-            value = Arrays.copyOfRange(value, 0, value.length - 1);
+        if(dotFound)
+            floatingPart = new short[bigIntInString.length() - dotIndex - 1];
+        else
+            floatingPart = new short[]{0};
+
+        for(int i = dotIndex + 1, j = floatingPart.length - 1; i < bigIntInString.length() && j >= 0; i++, j--)
+            floatingPart[j] = Short.parseShort(String.valueOf(bigIntInString.charAt(i)));
+
+        //if(value[value.length - 1] == 0 && value.length > 1)
+          //  value = Arrays.copyOfRange(value, 0, value.length - 1);
     }
 
     private boolean isGreaterThanWithoutSign(BigNumber anotherNumber) {
@@ -384,17 +492,17 @@ public class BigNumber {
 
     private String append(String value, int times, short toAppend) {
         StringBuilder builder = new StringBuilder(value);
-        for(int i = 0; i < times; i++) {
+        for(int i = 0; i < times; i++)
             builder.append(toAppend);
-        }
+
         return builder.toString();
     }
 
     private String append(String value, BigNumber times, short toAppend) {
         StringBuilder builder = new StringBuilder(value);
-        for(BigNumber i = new BigNumber("0"); i.isLessThan(times); i.increment()) {
+        for(BigNumber i = new BigNumber("0"); i.isLessThan(times); i.increment())
             builder.append(toAppend);
-        }
+
         return builder.toString();
     }
 }
