@@ -430,9 +430,6 @@ public class BigNumber {
 
         for(int i = dotIndex + 1, j = floatingPart.length - 1; i < bigIntInString.length() && j >= 0; i++, j--)
             floatingPart[j] = Short.parseShort(String.valueOf(bigIntInString.charAt(i)));
-
-        //if(value[value.length - 1] == 0 && value.length > 1)
-          //  value = Arrays.copyOfRange(value, 0, value.length - 1);
     }
 
     private boolean isGreaterThanWithoutSign(BigNumber anotherNumber) {
