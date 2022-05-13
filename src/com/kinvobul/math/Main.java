@@ -210,6 +210,34 @@ public class Main {
 
         assertThat(new BigNumber("-.12").toString())
                 .isEqualTo(new BigNumber("-0.12").toString());
+
+        assertThat(new BigNumber(".").toString())
+                .isEqualTo(new BigNumber("+0.").toString());
+
+        assertThat(new BigNumber(".0").toString())
+                .isEqualTo(new BigNumber("-0.").toString());
+
+        assertThat(new BigNumber(".").toString())
+                .isEqualTo(new BigNumber("0").toString());
+
+        //floating numbers operations
+        assertThat(new BigNumber("1.123").add(new BigNumber("0.45")))
+                .isEqualTo(new BigNumber("1.573"));
+
+        assertThat(new BigNumber("0.12").add(new BigNumber("0.456")))
+                .isEqualTo(new BigNumber("0.576"));
+
+        assertThat(new BigNumber("0.991").add(new BigNumber("5.009")))
+                .isEqualTo(new BigNumber("6"));
+
+        assertThat(new BigNumber("1.123").subtract(new BigNumber("0.45")))
+                .isEqualTo(new BigNumber("0.673"));
+
+        assertThat(new BigNumber("0.45").subtract(new BigNumber("1.123")))
+                .isEqualTo(new BigNumber("-0.673"));
+
+        assertThat(new BigNumber("5.25").subtract(new BigNumber("5.25")))
+                .isEqualTo(new BigNumber("0"));
     }
 }
 

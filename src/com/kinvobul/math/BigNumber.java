@@ -1,7 +1,6 @@
 package com.kinvobul.math;
 
 import java.util.Arrays;
-import java.util.IllegalFormatWidthException;
 
 public class BigNumber {
     // BigNumber stores decimal values in reverse order (value 123 is stored as {3,2,1}).
@@ -43,30 +42,31 @@ public class BigNumber {
 
     public BigNumber add(BigNumber addedValue) {
         short[] value2 = addedValue.getValue();
+        short[] value2floating = addedValue.getFloatingPart();
 
-        if(isNegative) {
+        if(this.isNegative) {
             if (addedValue.isNegative()) {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateAdd(value, value2, true); //with neg flag
+                    return calculateAdd(this.value, value2, this.floatingPart, value2floating, true); //with neg flag
                 else
-                    return calculateAdd(value2, value, true); //with neg flag
+                    return calculateAdd(value2, this.value, value2floating, this.floatingPart, true); //with neg flag
             } else {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateSubtract(value, value2, true);//with neg flag
+                    return calculateSubtract(this.value, value2, this.floatingPart, value2floating,true);//with neg flag
                 else
-                    return calculateSubtract(value2, value, false);//with plus flag
+                    return calculateSubtract(value2, this.value, value2floating, this.floatingPart, false);//with plus flag
             }
         } else {
             if (addedValue.isNegative()) {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateSubtract(value, value2, false); //with plus flag
+                    return calculateSubtract(this.value, value2, this.floatingPart, value2floating, false); //with plus flag
                 else
-                    return calculateSubtract(value2, value, true); //with neg flag
+                    return calculateSubtract(value2, this.value, value2floating, this.floatingPart, true); //with neg flag
             } else {
                 if (this.isGreaterThanWithoutSign(addedValue))
-                    return calculateAdd(value, value2, false);//with plus flag
+                    return calculateAdd(this.value, value2, this.floatingPart, value2floating, false);//with plus flag
                 else
-                    return calculateAdd(value2, value, false);//with plus flag
+                    return calculateAdd(value2, this.value, value2floating, this.floatingPart, false);//with plus flag
             }
         }
     }
@@ -80,7 +80,7 @@ public class BigNumber {
      * @param signNegative is negative or not
      * @return new BigNumber
      */
-    private BigNumber calculateAdd(short[] value1, short[] value2, boolean signNegative) {
+    private BigNumber calculateAdd(short[] value1, short[] value2, short[] value1floating, short[] value2floating, boolean signNegative) {
         int j = 0;
         boolean pernose = false;
         short[] result = new short[value1.length];
@@ -109,37 +109,38 @@ public class BigNumber {
             result[result.length - 1] = 1;
         }
 
-        value = result;
-        isNegative = signNegative;
+        this.value = result;
+        this.isNegative = signNegative;
         return this;
     }
 
     public BigNumber subtract(BigNumber subtractedValue) {
         short[] value2 = subtractedValue.getValue();
+        short[] value2floating = subtractedValue.getFloatingPart();
 
-        if(isNegative) {
+        if(this.isNegative) {
             if(subtractedValue.isNegative()) {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateSubtract(value, value2, true); //with neg flag
+                    return calculateSubtract(this.value, value2, this.floatingPart, value2floating,true); //with neg flag
                 else
-                    return calculateSubtract(value2, value, false); //with plus flag
+                    return calculateSubtract(value2, this.value, value2floating, this.floatingPart,false); //with plus flag
             } else {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateAdd(value, value2, true);//with neg flag
+                    return calculateAdd(this.value, value2, this.floatingPart, value2floating,true);//with neg flag
                 else
-                    return calculateAdd(value2, value, true);//with neg flag
+                    return calculateAdd(value2, this.value, value2floating, this.floatingPart,true);//with neg flag
             }
         } else {
             if(subtractedValue.isNegative()) {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateAdd(value, value2, false); //with plus flag
+                    return calculateAdd(this.value, value2, this.floatingPart, value2floating,false); //with plus flag
                 else
-                    return calculateAdd(value2, value, false); //with plus flag
+                    return calculateAdd(value2, this.value, value2floating, this.floatingPart,false); //with plus flag
             } else {
                 if(this.isGreaterThanWithoutSign(subtractedValue))
-                    return calculateSubtract(value, value2, false);//with plus flag
+                    return calculateSubtract(this.value, value2, this.floatingPart, value2floating,false);//with plus flag
                 else
-                    return calculateSubtract(value2, value, true);//with neg flag
+                    return calculateSubtract(value2, this.value, value2floating, this.floatingPart,true);//with neg flag
             }
         }
     }
@@ -153,7 +154,7 @@ public class BigNumber {
      * @param signNegative is negative or not
      * @return new BigNumber
      */
-    private BigNumber calculateSubtract(short[] value1, short[] value2, boolean signNegative) {
+    private BigNumber calculateSubtract(short[] value1, short[] value2, short[] value1floating, short[] value2floating, boolean signNegative) {
         short[] result = new short[value1.length];
         boolean pernose = false;
         for(int i = 0, j = 0; i < value1.length; i++, j++) {
@@ -187,7 +188,9 @@ public class BigNumber {
         if(result[0] == 0)
             signNegative = false;
 
-        return new BigNumber(result, signNegative);
+        this.value = result;
+        this.isNegative = signNegative;
+        return this;
     }
 
     /**
@@ -201,8 +204,8 @@ public class BigNumber {
         short[] value2 = addedValue.getValue();
 
         for(int i = 0; i < value2.length; i++) {
-            for(int j = 0; j < value.length; j++) {
-                int one = value[j] * value2[i];
+            for(int j = 0; j < this.value.length; j++) {
+                int one = this.value[j] * value2[i];
                 String two = String.valueOf(one);
                 String three = append(two, new BigNumber(String.valueOf(j)).add(new BigNumber(String.valueOf(i))), (short) 0);
                 sum = sum.add(new BigNumber(three));
@@ -241,19 +244,19 @@ public class BigNumber {
     }
 
     public short[] getValue() {
-        return value;
+        return this.value;
     }
 
     public short[] getFloatingPart() {
-        return floatingPart;
+        return this.floatingPart;
     }
 
     public boolean isNegative() {
-        return isNegative;
+        return this.isNegative;
     }
 
     public boolean hasFloatingPart() {
-        return hasFloatingPart;
+        return this.hasFloatingPart;
     }
 
     public void setNegative(boolean isNegative) {
@@ -261,7 +264,7 @@ public class BigNumber {
     }
 
     public boolean isGreaterThan(BigNumber anotherNumber) {
-        if(isNegative) {
+        if(this.isNegative) {
             if (!anotherNumber.isNegative())
                 return false;
         } else if(anotherNumber.isNegative())
@@ -270,29 +273,30 @@ public class BigNumber {
         return isGreaterThanWithoutSign(anotherNumber);
     }
 
-    public boolean isLessThan(BigNumber anotherNumber) {
-        if(isNegative) {
-            if (!anotherNumber.isNegative())
+    public boolean isLessThan(int i) {
+        if(this.isNegative) {
+            if(i >= 0)
                 return true;
-        } else if(anotherNumber.isNegative())
+        } else if(i < 0)
             return false;
 
-        return isLessThan(anotherNumber.getValue());
+        BigNumber than = new BigNumber(String.valueOf(i));
+        return isLessThanWithoutSign(than);
     }
 
     @Override
     public String toString() {
-        if(value[0] == 0 && !hasFloatingPart())
-            isNegative = false;
+        if(this.value[0] == 0 && !hasFloatingPart())
+            this.isNegative = false;
 
-        StringBuilder result = new StringBuilder(isNegative ? "-" : "");
-        for(int i = value.length - 1; i >= 0; i--)
-            result.append(value[i]);
+        StringBuilder result = new StringBuilder(this.isNegative ? "-" : "");
+        for(int i = this.value.length - 1; i >= 0; i--)
+            result.append(this.value[i]);
 
-        if(hasFloatingPart) {
+        if(this.hasFloatingPart) {
             result.append('.');
-            for(int i = floatingPart.length - 1; i >= 0; i--)
-                result.append(floatingPart[i]);
+            for(int i = this.floatingPart.length - 1; i >= 0; i--)
+                result.append(this.floatingPart[i]);
         }
 
         return result.toString();
@@ -308,32 +312,30 @@ public class BigNumber {
 
         BigNumber bigInt = (BigNumber) o;
 
-        if(isNegative != bigInt.isNegative())
+        if(this.isNegative() != bigInt.isNegative())
             return false;
 
-        if(hasFloatingPart())
-            if(!bigInt.hasFloatingPart())
-                return false;
-        else
-            if(bigInt.hasFloatingPart())
+        if(    ( this.hasFloatingPart() && !bigInt.hasFloatingPart() )
+            || (!this.hasFloatingPart() && bigInt.hasFloatingPart()  ) )
                 return false;
 
         short[] values = bigInt.getValue();
-        if(value.length != values.length)
+        if(this.value.length != values.length)
             return false;
 
-        for(int i = 0; i < value.length; i++)
-            if(value[i] != values[i])
+        for(int i = 0; i < this.value.length; i++)
+            if(this.value[i] != values[i])
                 return false;
 
-        if(hasFloatingPart() && bigInt.hasFloatingPart()) {
+        if(this.hasFloatingPart() && bigInt.hasFloatingPart()) {
             short[] floating = bigInt.getFloatingPart();
-            if (floatingPart.length != floating.length)
+            if (this.floatingPart.length != floating.length)
                 return false;
 
-            for (int i = 0; i < floatingPart.length; i++)
-                if (floatingPart[i] != floating[i])
+            for (int i = 0; i < this.floatingPart.length; i++) {
+                if (this.floatingPart[i] != floating[i])
                     return false;
+            }
         }
 
         return true;
@@ -342,11 +344,11 @@ public class BigNumber {
     @Override
     public int hashCode() {
         int sum = 0;
-        for (short element : value)
+        for (short element : this.value)
             sum += (int) element;
 
-        if(hasFloatingPart)
-            for (short item : floatingPart)
+        if(this.hasFloatingPart)
+            for (short item : this.floatingPart)
                 sum += (int) item;
 
         return sum;
@@ -361,13 +363,13 @@ public class BigNumber {
 
     private void init(String bigIntInString) {
         if(bigIntInString.charAt(0) == '-') {
-            isNegative = true;
+            this.isNegative = true;
             bigIntInString = String.copyValueOf(bigIntInString.toCharArray(), 1, bigIntInString.length() - 1);
         } else if(bigIntInString.charAt(0) == '+') {
-            isNegative = false;
+            this.isNegative = false;
             bigIntInString = String.copyValueOf(bigIntInString.toCharArray(), 1, bigIntInString.length() - 1);
         } else
-            isNegative = false;
+            this.isNegative = false;
 
         boolean dotFound = false;
         int dotIndex = 0;
@@ -385,17 +387,14 @@ public class BigNumber {
                 case '9':
                     break;
                 case '+':
-                    if(i != 0)
-                        throw new IllegalArgumentException("Plus sign found in wrong place with index " + i + ".");
-                    break;
+                    throw new IllegalArgumentException("Plus sign found in wrong place with index " + i + ".");
                 case '-':
-                    if(i != 0)
-                        throw new IllegalArgumentException("Minus sign found in wrong place with index " + i + ".");
-                    break;
+                    throw new IllegalArgumentException("Minus sign found in wrong place with index " + i + ".");
                 case '.':
                     if(dotFound)
                         throw new IllegalArgumentException("Found more than a one dot.");
                     dotFound = true;
+                    this.hasFloatingPart = true;
                     dotIndex = i;
                     break;
                 default:
@@ -405,67 +404,65 @@ public class BigNumber {
 
         if(dotFound) {
             if (dotIndex == 0)
-                value = new short[1];
+                this.value = new short[1];
             else
-                value = new short[dotIndex];
+                this.value = new short[dotIndex];
         } else
-            value = new short[bigIntInString.length()];
+            this.value = new short[bigIntInString.length()];
 
-        for(int i = value.length - 1, j = 0; i >= 0 && j < bigIntInString.length(); i--, j++) {
+        for(int i = this.value.length - 1, j = 0; i >= 0 && j < bigIntInString.length(); i--, j++) {
             if(j == 0 && bigIntInString.charAt(j) == '.') {
-                value[i] = 0;
-                continue;
+                this.value[i] = 0;
+                break;
             }
 
             if(bigIntInString.charAt(j) == '.')
-                throw new IllegalArgumentException("This iteration should not happen.");
+                break;
 
-            value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
+            this.value[i] = Short.parseShort(String.valueOf(bigIntInString.charAt(j)));
         }
 
         if(dotFound)
-            floatingPart = new short[bigIntInString.length() - dotIndex - 1];
+            this.floatingPart = new short[bigIntInString.length() - dotIndex - 1];
         else
-            floatingPart = new short[]{0};
+            this.floatingPart = new short[]{0};
 
-        for(int i = dotIndex + 1, j = floatingPart.length - 1; i < bigIntInString.length() && j >= 0; i++, j--)
-            floatingPart[j] = Short.parseShort(String.valueOf(bigIntInString.charAt(i)));
+        for(int i = dotIndex + 1, j = this.floatingPart.length - 1; i < bigIntInString.length() && j >= 0; i++, j--)
+            this.floatingPart[j] = Short.parseShort(String.valueOf(bigIntInString.charAt(i)));
     }
 
     private boolean isGreaterThanWithoutSign(BigNumber anotherNumber) {
-        var anotherValue = anotherNumber.getValue();
-        return isGreaterThan(anotherValue);
+        return isGreaterThan(anotherNumber.getValue());
+    }
+
+    private boolean isLessThanWithoutSign(BigNumber anotherNumber) {
+        return isLessThan(anotherNumber.getValue());
     }
 
     private boolean isGreaterThan(short[] anotherValue) {
-        if(value.length > anotherValue.length)
+        if(this.value.length > anotherValue.length)
             return true;
-        else if(anotherValue.length > value.length)
+        else if(anotherValue.length > this.value.length)
             return false;
 
-        for(int i = value.length - 1; i >= 0; i--) {
-            if(value[i] > anotherValue[i])
+        for(int i = this.value.length - 1; i >= 0; i--) {
+            if(this.value[i] > anotherValue[i])
                 return true;
-            else if(anotherValue[i] > value[i])
+            else if(anotherValue[i] > this.value[i])
                 return false;
         }
 
         return false;
     }
 
-    private boolean isLessThan(int i) {
-        BigNumber than = new BigNumber(String.valueOf(i));
-        return isLessThan(than.getValue());
-    }
-
     private boolean isLessThan(short[] anotherValue) {
-        if(value.length > anotherValue.length)
+        if(this.value.length > anotherValue.length)
             return false;
-        else if(anotherValue.length > value.length)
+        else if(anotherValue.length > this.value.length)
             return true;
 
-        for(int i = value.length - 1; i >= 0; i--) {
-            if(value[i] > anotherValue[i])
+        for(int i = this.value.length - 1; i >= 0; i--) {
+            if(this.value[i] > anotherValue[i])
                 return false;
             else if(anotherValue[i] > value[i])
                 return true;
@@ -475,16 +472,16 @@ public class BigNumber {
     }
 
     private void append(int times, short toAppend) {
-        final int newLength = value.length + times;
+        final int newLength = this.value.length + times;
         short[] result = new short[newLength];
 
         for(int i = 0; i < times; i++)
             result[i] = toAppend;
 
-        for(int i = 0; i < value.length; i++)
-            result[i + times] = value[i];
+        for(int i = 0; i < this.value.length; i++)
+            result[i + times] = this.value[i];
 
-        value = result;
+        this.value = result;
     }
 
     private String append(String value, int times, short toAppend) {
@@ -497,7 +494,7 @@ public class BigNumber {
 
     private String append(String value, BigNumber times, short toAppend) {
         StringBuilder builder = new StringBuilder(value);
-        for(BigNumber i = new BigNumber("0"); i.isLessThan(times); i.increment())
+        for(BigNumber i = new BigNumber("0"); i.isLessThanWithoutSign(times); i.increment())
             builder.append(toAppend);
 
         return builder.toString();
